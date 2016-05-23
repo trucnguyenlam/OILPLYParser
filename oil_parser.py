@@ -4,124 +4,6 @@ from ply import lex, yacc
 from lex import TOKEN
 
 
-######     #    #######    #
-#     #   # #      #      # #
-#     #  #   #     #     #   #
-#     # #     #    #    #     #
-#     # #######    #    #######
-#     # #     #    #    #     #
-######  #     #    #    #     #
-
-
-class OIL:
-    ''' Definition of OIL file
-    '''
-
-    def __init__(self):
-        self.version = ""
-        self.implementationDef = {}
-        self.applicationDef = {}
-
-
-#       ####### #     # ####### ######
-#       #        #   #  #       #     #
-#       #         # #   #       #     #
-#       #####      #    #####   ######
-#       #         # #   #       #   #
-#       #        #   #  #       #    #
-####### ####### #     # ####### #     #
-
-
-class OILLexer():
-    # List of token names.
-    tokens = (
-        'FALSE',
-        'TRUE',
-        'AUTO',
-        'NO_DEFAULT',
-        'OIL_VERSION',
-        'EQUAL',
-        'SEMI',
-        'IMPLEMENTATION',
-        'IDENT',
-        'LCBRACKET',
-        'LBRACKET',
-        'RCBRACKET'
-        'RBRACKET'
-        'OS',
-        'TASK',
-        'COUNTER',
-        'ALARM',
-        'RESOURCE',
-        'EVENT',
-        'ISR',
-        'MESSAGE',
-        'COM',
-        'NM',
-        'APPMODE',
-        'IPDU',
-        'UINT32',
-        'INT32',
-        'UINT64',
-        'INT64',
-        'FLOAT',
-        'ENUM',
-        'STRING',
-        'BOOLEAN',
-        'WITH_AUTO',
-        'TO',                      # ..
-        'COMMA',
-        'COLON',
-        'OS_TYPE'
-        'TASK_TYPE',
-        'COUNTER_TYPE',
-        'ALARM_TYPE',
-        'RESOURCE_TYPE',
-        'EVENT_TYPE',
-        'ISR_TYPE',
-        'MESSAGE_TYPE',
-        'COM_TYPE',
-        'NM_TYPE',
-        'APPMODE_TYPE',
-        'IPDU_TYPE',
-        'CPU',
-        'PLUS',
-        'MINUS'
-    )
-
-
-    t_FALSE = r'FALSE'
-
-
-
-    # Regular expression rules for simple tokens
-    #
-    #
-
-    # A regular expression rule with some action code
-
-    def t_COUNT(t):
-        r"\d+"
-        t.value = int(t.value)
-        return t
-
-    def t_error(t):
-        raise TypeError("Unknown text '%s'" % (t.value,))
-
-    # Build the lexer
-    def build(self, **kwargs):
-        self.lexer = lex.lex(module=self, **kwargs)
-
-    # Test it output
-    def test(self, data):
-        self.lexer.input(data)
-        while True:
-            tok = self.lexer.token()
-            if not tok:
-                break
-            print(tok)
-
-
 ######     #    ######   #####  ####### ######
 #     #   # #   #     # #     # #       #     #
 #     #  #   #  #     # #       #       #     #
@@ -147,7 +29,7 @@ class OILParser():
         """ Version : STRING """
 
     def p_ImplementationDefinition(self, p):
-        """ ImplementationDefinition :  IMPLEMENTATION Name LCBRACKET ImplementationSpecList RCBRACKET Description SEMI
+        """ ImplementationDefinition :  IMPLEMENTATION Name LBRACE ImplementationSpecList RBRACE Description SEMI
         """
 
     def p_ImplementationSpecList(self, p):
@@ -156,7 +38,7 @@ class OILParser():
         """
 
     def p_ImplementationSpec(self, p):
-        """ ImplementationSpec : Object LCBRACKET ImplementationList RCBRACKET Description SEMI
+        """ ImplementationSpec : Object LBRACE ImplementationList RBRACE Description SEMI
         """
 
     def p_Object(self, p):
@@ -199,7 +81,7 @@ class OILParser():
 
     def p_ImplParameterList(self, p):
         """ ImplParameterList   : empty
-                                | LCBRACKET ImplDefList RCBRACKET
+                                | LBRACE ImplDefList RBRACE
         """
 
     def p_ImplDefList(self, p):
@@ -317,7 +199,7 @@ class OILParser():
         """
 
     def p_ApplicationDefinition(self, p):
-        """ ApplicationDefinition   : CPU Name LCBRACKET ObjectDefinitionList RCBRACKET Description SEMI
+        """ ApplicationDefinition   : CPU Name LBRACE ObjectDefinitionList RBRACE Description SEMI
         """
 
     def p_ObjectDefinitionList(self, p):
@@ -328,7 +210,7 @@ class OILParser():
 
     def p_ObjectDefinition(self, p):
         """ ObjectDefinition        : ObjectName Description SEMI
-                                    | ObjectName LCBRACKET ParameterList RCBRACKET Description SEMI
+                                    | ObjectName LBRACE ParameterList RBRACE Description SEMI
         """
 
     def p_ObjectName(self, p):
@@ -352,9 +234,9 @@ class OILParser():
 
     def p_AttributeValue(self, p):
         """ AttributeValue          : Name
-                                    | Name LCBRACKET ParameterList RCBRACKET
+                                    | Name LBRACE ParameterList RBRACE
                                     | Boolean
-                                    | Boolean LCBRACKET ParameterList RCBRACKET
+                                    | Boolean LBRACE ParameterList RBRACE
                                     | Number
                                     | Float
                                     | STRING
@@ -388,9 +270,74 @@ class OILParser():
         """
 
     def p_IntDigits(self, p):
-        """ IntDigits               :
+        """ IntDigits               : ZeroDigit
+                                    | PosDigit
+                                    | PosDigit DecDigits
         """
 
+    def p_DecDigits(self, p):
+        """ DecDigits               : DecDigit
+                                    | DecDigit DecDigits
+        """
+
+    def p_Float(self, p):
+        """ Float       : Sign DecDigits DOT DecDigits Exponent
+        """
+
+    def p_Exponent(self, p):
+        """ Exponent    : empty
+                        | 'e' Sign DecDigits
+                        | 'E' Sign DecDigits
+        """
+
+    def p_ZeroDigit(self, p):
+        """ ZeroDigit   : '0'
+        """
+
+    def p_PosDigit(self, p):
+        """ PosDigit    : '1'
+                        | '2'
+                        | '3'
+                        | '4'
+                        | '5'
+                        | '6'
+                        | '7'
+                        | '8'
+                        | '9'
+        """
+
+    def p_DecDigit(self, p):
+        """ DecDigit    : ZeroDigit
+                        | PosDigit
+        """
+
+    def p_HexNumber(self, p):
+        """ HexNumer    : PREFIX HexDigits
+        """
+
+    def p_HexDigits(self, p):
+        """ HexDigits   : HexDigit
+                        | HexDigit HexDigits
+        """
+
+    def p_HexDigit(self, p):
+        """ HexDigit    : 'A' | 'a'
+                        | 'B' | 'b'
+                        | 'C' | 'c'
+                        | 'D' | 'd'
+                        | 'E' | 'e'
+                        | 'F' | 'f'
+                        | '0'
+                        | '1'
+                        | '2'
+                        | '3'
+                        | '4'
+                        | '5'
+                        | '6'
+                        | '7'
+                        | '8'
+                        | '9'
+        """
 
     def p_empty(self, p):
         'empty : '
@@ -399,77 +346,3 @@ class OILParser():
     def p_error(p):
         raise TypeError("unknown text at %r" % (p.value,))
 
-# yacc.yacc()
-
-# ######
-
-# import collections
-
-
-# def atom_count(s):
-#     """calculates the total number of atoms in the chemical equation
-#     >>> atom_count("H2SO4")
-#     7
-#     >>>
-#     """
-#     count = 0
-#     for atom in yacc.parse(s):
-#         count += atom.count
-#     return count
-
-
-# def element_counts(s):
-#     """calculates counts for each element in the chemical equation
-#     >>> element_counts("CH3COOH")["C"]
-#     2
-#     >>> element_counts("CH3COOH")["H"]
-#     4
-#     >>>
-#     """
-
-#     counts = collections.defaultdict(int)
-#     for atom in yacc.parse(s):
-#         counts[atom.symbol] += atom.count
-#     return counts
-
-# ######
-
-
-# def assert_raises(exc, f, *args):
-#     try:
-#         f(*args)
-#     except exc:
-#         pass
-#     else:
-#         raise AssertionError("Expected %r" % (exc,))
-
-
-# def test_element_counts():
-#     assert element_counts("CH3COOH") == {"C": 2, "H": 4, "O": 2}
-#     assert element_counts("Ne") == {"Ne": 1}
-#     assert element_counts("") == {}
-#     assert element_counts("NaCl") == {"Na": 1, "Cl": 1}
-#     assert_raises(TypeError, element_counts, "Blah")
-#     assert_raises(TypeError, element_counts, "10")
-#     assert_raises(TypeError, element_counts, "1C")
-
-
-# def test_atom_count():
-#     assert atom_count("He") == 1
-#     assert atom_count("H2") == 2
-#     assert atom_count("H2SO4") == 7
-#     assert atom_count("CH3COOH") == 8
-#     assert atom_count("NaCl") == 2
-#     assert atom_count("C60H60") == 120
-#     assert_raises(TypeError, atom_count, "SeZYou")
-#     assert_raises(TypeError, element_counts, "10")
-#     assert_raises(TypeError, element_counts, "1C")
-
-
-# def test():
-#     test_atom_count()
-#     test_element_counts()
-
-# if __name__ == "__main__":
-#     test()
-#     print "All tests passed."
