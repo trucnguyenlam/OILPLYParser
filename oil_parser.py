@@ -407,4 +407,4 @@ def parse_file(filename):
 if __name__ == '__main__':
     import sys, json
     result = parse_file(sys.argv[1])
-    print json.dump(result, sys.stdout)
+    result.show( nodenames=True)
