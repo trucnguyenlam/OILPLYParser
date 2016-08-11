@@ -2,6 +2,22 @@ from ply import yacc
 from oil_lexer import OILLexer
 import oil_ast
 
+# -*- coding: utf-8 -*-
+# @Author: Truc Nguyen Lam
+# @Date:   2016-05-26 15:14:19
+# @Last Modified by:   trucn
+# @Last Modified time: 2016-05-26 15:20:24
+
+'''
+TODO:
+    - Resolving conflict in grammar
+    - Optimize parser
+
+ChangeLog:
+    2016.05.25   Initial version
+'''
+
+
 class OILParser():
     def __init__(self):
         self.oillexer = OILLexer()
@@ -89,7 +105,6 @@ class OILParser():
             p[0] = oil_ast.ImplAttrDef(p[1], p[2], p[3], p[4], p[5], p[6], p[7])
         else:               # STRING
             p[0] = oil_ast.ImplAttrDef(p[1], p[2], None, p[3], p[4], p[5], p[6])
-
 
     def p_ImplParameterList(self, p):
         """ ImplParameterList   : empty

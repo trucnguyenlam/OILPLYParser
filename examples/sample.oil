@@ -1,0 +1,169 @@
+OIL_VERSION = "2.5";
+
+IMPLEMENTATION Standard {
+    OS {
+        ENUM [STANDARD, EXTENDED] STATUS = EXTENDED;
+        BOOLEAN STARTUPHOOK = FALSE;
+        BOOLEAN ERRORHOOK = FALSE;
+        BOOLEAN SHUTDOWNHOOK = FALSE;
+        BOOLEAN PRETASKHOOK = FALSE;
+        BOOLEAN POSTTASKHOOK = FALSE;
+        BOOLEAN USEGETSERVICEID = FALSE;
+        BOOLEAN USEPARAMETERACCESS = FALSE;
+        BOOLEAN USERESSCHEDULER = TRUE;
+    };
+
+    APPMODE { };
+
+    TASK {
+        BOOLEAN [
+            TRUE {
+                APPMODE_TYPE APPMODE[];
+            },
+            FALSE
+        ] AUTOSTART = NO_DEFAULT;
+
+        UINT32 [0..15] PRIORITY = NO_DEFAULT;
+        UINT32 ACTIVATION = NO_DEFAULT;
+        ENUM [NON, FULL] SCHEDULE = NO_DEFAULT;
+        EVENT_TYPE EVENT[];
+        RESOURCE_TYPE RESOURCE[];
+
+        UINT32 STACKSIZE = 1024;
+    };
+
+    ISR {
+        UINT32 [1, 2] CATEGORY = NO_DEFAULT;
+        UINT32 PRIORITY = NO_DEFAULT;
+        UINT32 ENTRY = NO_DEFAULT;
+        RESOURCE_TYPE RESOURCE[];
+    };
+
+    COUNTER {
+        UINT32 MINCYCLE = NO_DEFAULT;
+        UINT32 MAXALLOWEDVALUE = NO_DEFAULT;
+        UINT32 TICKSPERBASE = NO_DEFAULT;
+    };
+
+    ALARM {
+        COUNTER_TYPE COUNTER;
+        ENUM [
+            ACTIVATETASK {
+                TASK_TYPE TASK;
+            },
+            SETEVENT {
+                TASK_TYPE TASK;
+                EVENT_TYPE EVENT;
+            },
+            ALARMCALLBACK {
+                STRING ALARMCALLBACKNAME;
+            }
+        ] ACTION = NO_DEFAULT;
+
+        BOOLEAN [
+            TRUE {
+                UINT32 ALARMTIME;
+                UINT32 CYCLETIME;
+                APPMODE_TYPE APPMODE[];
+            },
+            FALSE
+        ] AUTOSTART = NO_DEFAULT;
+    };
+
+    EVENT {
+        UINT32 WITH_AUTO MASK = AUTO;
+    };
+
+    RESOURCE {
+        ENUM [
+            STANDARD,
+            LINKED {
+                RESOURCE_TYPE LINKEDRESOURCE;
+            },
+            INTERNAL
+        ] RESOURCEPROPERTY = NO_DEFAULT;
+    };
+};
+
+CPU current {
+    OS os {
+        STATUS = STANDARD;
+        STARTUPHOOK = TRUE;
+        ERRORHOOK = TRUE;
+        SHUTDOWNHOOK = TRUE;
+        PRETASKHOOK = TRUE;
+        POSTTASKHOOK = TRUE;
+        USEGETSERVICEID = TRUE;
+        USEPARAMETERACCESS = TRUE;
+        USERESSCHEDULER = TRUE;
+    };
+
+    APPMODE appmode1 {};
+    APPMODE appmode2 {};
+    APPMODE appmode3 {};
+
+    TASK task1 {
+        AUTOSTART = TRUE {
+            APPMODE = appmode1;
+            APPMODE = appmode2;
+            APPMODE = appmode3;
+        };
+        PRIORITY = 1;
+        STACKSIZE = 0x0200;
+        ACTIVATION = 8;
+        SCHEDULE = NON;
+    };
+
+    TASK task2 {
+        AUTOSTART = FALSE;
+        PRIORITY = 9;
+        STACKSIZE = 0x0200;
+        ACTIVATION = 8;
+        SCHEDULE = NON;
+    };
+
+    TASK task3 {
+        AUTOSTART = FALSE;
+        PRIORITY = 5;
+        STACKSIZE = 0x0200;
+        ACTIVATION = 1;
+        SCHEDULE = NON;
+    };
+
+    ISR timer_a0 {
+        CATEGORY = 2;
+        ENTRY = 12;
+        PRIORITY = 4;
+    };
+
+    ISR uart1_tx {
+        CATEGORY = 1;
+        ENTRY = 19;
+        PRIORITY = 6;
+    };
+
+    ISR uart1_rx {
+        CATEGORY = 1;
+        ENTRY = 20;
+        PRIORITY = 6;
+    };
+
+    COUNTER cnt1 {
+        MINCYCLE = 1;
+        MAXALLOWEDVALUE = 1000;
+        TICKSPERBASE = 1;
+    };
+
+    ALARM alm1{
+        COUNTER = cnt1;
+        ACTION  = ALARMCALLBACK { ALARMCALLBACKNAME = "alarm_cb"; };
+        AUTOSTART = TRUE {
+                    APPMODE = appmode1;
+                    APPMODE = appmode2;
+                    APPMODE = appmode3;
+                    ALARMTIME = 10;
+                    CYCLETIME = 10;
+                };
+    };
+
+};

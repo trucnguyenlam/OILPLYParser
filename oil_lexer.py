@@ -174,6 +174,10 @@ class OILLexer():
     def t_CONST_DEC(self, t):
         return t
 
+    def t_comment(self, t):
+        r'(/\*(.|\n)*?\*/)|(//.*)'
+        pass
+
     def t_error(self, t):
         raise TypeError("Unknown text (%s)" % (t.value,))
 
